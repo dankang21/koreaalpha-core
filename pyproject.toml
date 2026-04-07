@@ -1,0 +1,58 @@
+[build-system]
+requires = ["hatchling<1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "koreaalpha-core"
+version = "0.4.0"
+description = "Korean stock market portfolio analysis engine — Sharpe, MDD, backtest, benchmarks, Korean trading calendar"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {file = "LICENSE"}
+authors = [
+    { name = "Daniel Kang", email = "dankang21@gmail.com" },
+]
+keywords = [
+    "korea", "stock", "portfolio", "backtest", "sharpe-ratio", "mdd",
+    "benchmark", "all-weather", "kospi", "investment", "finance",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+dependencies = [
+    "numpy>=1.26.0",
+    "korean-holidays>=0.1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/dankang21/koreaalpha-core"
+Repository = "https://github.com/dankang21/koreaalpha-core"
+Issues = "https://github.com/dankang21/koreaalpha-core/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.9.0",
+]
+
+[tool.hatch.build.targets.sdist]
+include = ["koreaalpha_core/", "LICENSE", "README.md"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,1 @@
+"""Individual stock analysis module."""
