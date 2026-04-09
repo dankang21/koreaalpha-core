@@ -1,4 +1,4 @@
-"""백테스트 거래일 연동 + 배당 재투자 테스트."""
+"""Backtest trading day integration + dividend reinvestment tests."""
 
 import numpy as np
 from koreaalpha_core.portfolio.backtest import (
@@ -26,13 +26,13 @@ class TestRebalanceIndices:
         assert indices == []
 
     def test_monthly_with_dates(self):
-        # 1월~3월 거래일 (각 20일)
+        # Jan-Mar trading days (20 days each)
         dates = [f"202601{d:02d}" for d in range(2, 22)] + \
                 [f"202602{d:02d}" for d in range(2, 22)] + \
                 [f"202603{d:02d}" for d in range(2, 22)]
         indices = _get_rebalance_indices(60, "monthly", dates, use_kr_trading_days=True)
-        assert 0 in indices  # 첫 날
-        assert len(indices) == 3  # 3개월
+        assert 0 in indices  # first day
+        assert len(indices) == 3  # 3 months
 
     def test_simple_fallback(self):
         indices = _get_rebalance_indices(100, "monthly", dates=None, use_kr_trading_days=False)
@@ -48,7 +48,7 @@ class TestDividendReinvest:
         for _ in range(n - 1):
             prices["A"].append(prices["A"][-1] * (1 + np.random.normal(0.0003, 0.01)))
 
-        # 배당 없이
+        # Without dividends
         config_no_div = BacktestConfig(
             initial_capital=10_000_000,
             rebalance_period="none",
@@ -56,7 +56,7 @@ class TestDividendReinvest:
         )
         result_no_div = run_backtest({"A": prices["A"]}, {"A": 1.0}, config_no_div)
 
-        # 배당 재투자 (연 3%)
+        # Dividend reinvestment (3% annual)
         config_div = BacktestConfig(
             initial_capital=10_000_000,
             rebalance_period="none",
@@ -65,7 +65,7 @@ class TestDividendReinvest:
         )
         result_div = run_backtest({"A": prices["A"]}, {"A": 1.0}, config_div)
 
-        # 배당 재투자가 더 높아야 함
+        # Dividend reinvestment should yield higher value
         assert result_div.portfolio_values[-1] > result_no_div.portfolio_values[-1]
 
     def test_no_dividend_same_result(self):
@@ -81,7 +81,7 @@ class TestDividendReinvest:
             initial_capital=1_000_000,
             rebalance_period="none",
             dividend_reinvest=True,
-            dividend_yields={},  # 빈 yields
+            dividend_yields={},  # empty yields
         )
         r2 = run_backtest({"A": prices["A"]}, {"A": 1.0}, config2)
 
@@ -90,7 +90,7 @@ class TestDividendReinvest:
 
 class TestKrTradingDayRebalance:
     def test_skips_holiday(self):
-        # 2026-01-01은 공휴일, 2026-01-02는 금요일(거래일)
+        # 2026-01-01 is a holiday, 2026-01-02 is Friday (trading day)
         dates = ["20251231", "20260101", "20260102", "20260105"]
         prices = {"A": [100, 100, 101, 102]}
 
@@ -101,6 +101,6 @@ class TestKrTradingDayRebalance:
         )
         result = run_backtest({"A": prices["A"]}, {"A": 1.0}, config, dates=dates)
 
-        # 리밸런싱이 거래일에만 발생하는지 확인
+        # Verify rebalancing only occurs on trading days
         for event in result.rebalance_events:
-            assert event.date != "20260101"  # 공휴일에 리밸런싱 안 함
+            assert event.date != "20260101"  # no rebalancing on holidays

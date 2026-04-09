@@ -1,4 +1,4 @@
-"""펀더멘탈 분석 테스트."""
+"""Fundamental analysis tests."""
 
 import pytest
 
@@ -16,9 +16,9 @@ class TestPER:
         assert calculate_per(50000, 5000) == 10.0
 
     def test_negative_eps(self):
-        # 한국 관행: 적자 기업도 음수 PER 반환 (기본값)
+        # Korean convention: negative PER for loss-making companies (default)
         assert calculate_per(50000, -1000) == -50.0
-        # allow_negative=False이면 None
+        # Returns None when allow_negative=False
         assert calculate_per(50000, -1000, allow_negative=False) is None
 
     def test_zero_eps(self):
@@ -50,7 +50,7 @@ class TestDebtRatio:
 
 class TestAllFundamentals:
     def test_samsung_like(self):
-        """삼성전자 유사 데이터로 테스트."""
+        """Test with Samsung Electronics-like data."""
         m = calculate_all_fundamentals(
             price=70000,
             eps=5000,

@@ -1,4 +1,4 @@
-"""벤치마크 비교 테스트."""
+"""Benchmark comparison tests."""
 
 import numpy as np
 
@@ -19,21 +19,21 @@ class TestCompareWithBenchmark:
             user.append(user[-1] * (1 + np.random.normal(0.0005, 0.012)))
             bench.append(bench[-1] * (1 + np.random.normal(0.0003, 0.008)))
 
-        result = compare_with_benchmark(user, bench, "올웨더")
-        assert result.benchmark_name == "올웨더"
+        result = compare_with_benchmark(user, bench, "All Weather")
+        assert result.benchmark_name == "All Weather"
         assert result.grade in ["A+", "A", "B+", "B", "C", "D", "F"]
         assert isinstance(result.volatility_ratio, float)
 
     def test_custom_name(self):
         prices = [100, 110, 105, 115, 120]
-        result = compare_with_benchmark(prices, prices, "내 벤치마크")
-        assert result.benchmark_name == "내 벤치마크"
+        result = compare_with_benchmark(prices, prices, "My Benchmark")
+        assert result.benchmark_name == "My Benchmark"
         assert result.sharpe_diff == 0.0
 
     def test_default_name(self):
         prices = [100, 110, 105, 115, 120]
         result = compare_with_benchmark(prices, prices)
-        assert result.benchmark_name == "벤치마크"
+        assert result.benchmark_name == "Benchmark"
 
 
 class TestCompareWithMultiple:
@@ -48,9 +48,9 @@ class TestCompareWithMultiple:
             bench1.append(bench1[-1] * (1 + np.random.normal(0.0003, 0.008)))
             bench2.append(bench2[-1] * (1 + np.random.normal(0.0001, 0.015)))
 
-        results = compare_with_multiple(user, {"올웨더": bench1, "60/40": bench2})
+        results = compare_with_multiple(user, {"All Weather": bench1, "60/40": bench2})
         assert len(results) == 2
-        assert results[0].benchmark_name == "올웨더"
+        assert results[0].benchmark_name == "All Weather"
         assert results[1].benchmark_name == "60/40"
 
 
@@ -72,4 +72,4 @@ class TestGradePortfolio:
         m = calculate_all_metrics(prices)
         g1 = grade_portfolio(m, m)
         g2 = grade_portfolio(m, m)
-        assert g1 == g2  # 동일 입력 동일 결과
+        assert g1 == g2  # same input, same result

@@ -1,4 +1,4 @@
-"""새로 추가된 지표 테스트."""
+"""Tests for newly added metrics."""
 
 import numpy as np
 import pytest
@@ -39,7 +39,7 @@ class TestDrawdown:
         prices = [100, 120, 90, 110, 130]
         dd = drawdown_series(prices)
         assert len(dd) == 5
-        assert dd[0] == 0.0  # 시작점
+        assert dd[0] == 0.0  # starting point
         assert abs(dd[2] - (-0.25)) < 1e-10  # 120→90
 
 
@@ -55,7 +55,7 @@ class TestVaR:
         returns = np.random.normal(0, 0.02, 252)
         var = calculate_var(returns, 0.95)
         cvar = calculate_cvar(returns, 0.95)
-        assert cvar <= var  # CVaR은 항상 VaR 이하
+        assert cvar <= var  # CVaR is always <= VaR
 
 
 class TestDistribution:
@@ -68,7 +68,7 @@ class TestDistribution:
         np.random.seed(42)
         returns = np.random.normal(0, 0.01, 1000)
         k = calculate_kurtosis(returns)
-        assert abs(k) < 1  # 정규분포에 가까우므로 0에 근접
+        assert abs(k) < 1  # near-normal distribution, so close to 0
 
 
 class TestAlpha:
@@ -88,7 +88,7 @@ class TestOmega:
     def test_positive(self):
         returns = [0.01, 0.02, -0.005, 0.03, -0.01]
         omega = calculate_omega_ratio(returns)
-        assert omega > 1  # 양의 수익이 더 많으므로
+        assert omega > 1  # more positive returns than negative
 
     def test_tail_ratio(self):
         np.random.seed(42)
@@ -127,7 +127,7 @@ class TestCorrelationMatrix:
             "B": [0.01, 0.02, 0.03],
         })
         assert r["labels"] == ["A", "B"]
-        assert abs(r["matrix"][0][1] - 1.0) < 1e-4  # 완전 상관
+        assert abs(r["matrix"][0][1] - 1.0) < 1e-4  # perfect correlation
 
 
 class TestTax:

@@ -1,4 +1,4 @@
-"""포트폴리오 지표 계산 테스트."""
+"""Portfolio metrics calculation tests."""
 
 import math
 import pytest
@@ -54,7 +54,7 @@ class TestCagr:
 
 class TestVolatility:
     def test_zero_vol(self):
-        # 같은 수익률이면 변동성 0에 가까움 (ddof=1이라 NaN 방지 위해 3개 이상)
+        # Identical returns yield near-zero volatility (need 3+ samples for ddof=1)
         returns = [0.01, 0.01, 0.01, 0.01]
         vol = calculate_volatility(returns)
         assert vol < 0.001
@@ -67,9 +67,9 @@ class TestVolatility:
 
 class TestSharpeRatio:
     def test_positive(self):
-        # 꾸준히 양의 수익 → 양의 샤프
+        # Consistently positive returns -> positive Sharpe
         np.random.seed(42)
-        returns = np.random.normal(0.001, 0.01, 252)  # 일평균 0.1%, 일변동성 1%
+        returns = np.random.normal(0.001, 0.01, 252)  # daily mean 0.1%, daily vol 1%
         sharpe = calculate_sharpe_ratio(returns, risk_free_rate=0.035)
         assert isinstance(sharpe, float)
 
@@ -109,7 +109,7 @@ class TestMDD:
     def test_duration(self):
         prices = [100, 120, 110, 105, 115, 130]
         dur = calculate_mdd_duration(prices)
-        assert dur == 3  # 120 → 110 → 105 → 115 (아직 120 미회복)... 130에서 회복
+        assert dur == 3  # 120 -> 110 -> 105 -> 115 (not yet recovered to 120)... recovers at 130
 
 
 class TestCalmarRatio:

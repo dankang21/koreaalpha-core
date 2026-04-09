@@ -1,4 +1,4 @@
-"""한국 시장 특화 모듈 테스트."""
+"""Korean market module tests."""
 
 from datetime import date
 from koreaalpha_core.kr_market import (
@@ -10,26 +10,26 @@ from koreaalpha_core.kr_market import (
 
 class TestTradingDay:
     def test_weekday(self):
-        assert is_kr_trading_day(date(2026, 4, 6))  # 월요일
+        assert is_kr_trading_day(date(2026, 4, 6))  # Monday
 
     def test_weekend(self):
-        assert not is_kr_trading_day(date(2026, 4, 4))  # 토요일
-        assert not is_kr_trading_day(date(2026, 4, 5))  # 일요일
+        assert not is_kr_trading_day(date(2026, 4, 4))  # Saturday
+        assert not is_kr_trading_day(date(2026, 4, 5))  # Sunday
 
     def test_holiday(self):
-        assert not is_kr_trading_day(date(2026, 1, 1))  # 신정
-        assert not is_kr_trading_day(date(2026, 3, 1))  # 삼일절
-        assert not is_kr_trading_day(date(2026, 12, 25))  # 크리스마스
+        assert not is_kr_trading_day(date(2026, 1, 1))  # New Year's Day
+        assert not is_kr_trading_day(date(2026, 3, 1))  # Independence Movement Day
+        assert not is_kr_trading_day(date(2026, 12, 25))  # Christmas
 
 
 class TestCountTradingDays:
     def test_one_week(self):
         days = count_trading_days(date(2026, 4, 6), date(2026, 4, 10))
-        assert days == 5  # 월~금
+        assert days == 5  # Mon-Fri
 
     def test_includes_weekend(self):
         days = count_trading_days(date(2026, 4, 4), date(2026, 4, 10))
-        assert days == 5  # 토일 제외
+        assert days == 5  # weekends excluded
 
     def test_get_list(self):
         days = get_trading_days(date(2026, 4, 6), date(2026, 4, 10))
@@ -40,7 +40,7 @@ class TestCountTradingDays:
 class TestTransactionCost:
     def test_buy(self):
         cost = calc_transaction_cost(10_000_000, is_sell=False)
-        assert cost == 10_000_000 * 0.00015  # 수수료만
+        assert cost == 10_000_000 * 0.00015  # commission only
 
     def test_sell_includes_tax(self):
         cost = calc_transaction_cost(10_000_000, is_sell=True)

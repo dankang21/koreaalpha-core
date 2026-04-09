@@ -1,4 +1,4 @@
-"""formatters / validators 테스트."""
+"""Formatters / validators tests."""
 
 from koreaalpha_core.utils.formatters import format_percentage, format_currency, format_number
 from koreaalpha_core.utils.validators import (
