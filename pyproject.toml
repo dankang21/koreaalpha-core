@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "koreaalpha-core"
-version = "0.4.0"
-description = "Korean stock market portfolio analysis engine — Sharpe, MDD, backtest, benchmarks, Korean trading calendar"
+version = "0.5.0"
+description = "Korean stock market portfolio analysis engine — Sharpe, MDD, backtest, benchmarks, efficient frontier, factor scoring, Korean trading calendar"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {file = "LICENSE"}
