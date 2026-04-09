@@ -172,3 +172,52 @@ def calculate_all_fundamentals(
         fcf_yield=calculate_fcf_yield(fcf, market_cap),
         dividend_yield=div_yield,
     )
+
+
+def calculate_growth_trends(years_data: list[dict]) -> dict:
+    """Calculate multi-year financial growth trends.
+
+    Args:
+        years_data: List of dicts, each with keys:
+            - "year": int
+            - "income_statement": {"revenue": int, "operating_income": int, "net_income": int}
+            - "balance_sheet": {...}
+            - "ratios": {"roe": float | None, ...}
+
+    Returns:
+        Dict with "revenue", "operating_income", "net_income", "roe" trend arrays
+        and "revenue_cagr".
+    """
+    if len(years_data) < 2:
+        return {}
+
+    sorted_data = sorted(years_data, key=lambda x: x["year"])
+
+    revenue_trend = []
+    op_income_trend = []
+    net_income_trend = []
+    roe_trend = []
+
+    for d in sorted_data:
+        is_ = d.get("income_statement", {})
+        ratios = d.get("ratios", {})
+
+        revenue_trend.append({"year": d["year"], "value": is_.get("revenue", 0)})
+        op_income_trend.append({"year": d["year"], "value": is_.get("operating_income", 0)})
+        net_income_trend.append({"year": d["year"], "value": is_.get("net_income", 0)})
+        roe_trend.append({"year": d["year"], "value": ratios.get("roe")})
+
+    first_rev = revenue_trend[0]["value"]
+    last_rev = revenue_trend[-1]["value"]
+    n_years = len(revenue_trend) - 1
+    revenue_cagr = None
+    if first_rev > 0 and last_rev > 0 and n_years > 0:
+        revenue_cagr = round((last_rev / first_rev) ** (1 / n_years) - 1, 4)
+
+    return {
+        "revenue": revenue_trend,
+        "operating_income": op_income_trend,
+        "net_income": net_income_trend,
+        "roe": roe_trend,
+        "revenue_cagr": revenue_cagr,
+    }

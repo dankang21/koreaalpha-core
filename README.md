@@ -134,7 +134,7 @@ from koreaalpha_core import compare_with_benchmark
 result = compare_with_benchmark(
     user_prices=[...],
     benchmark_prices=[...],
-    benchmark_name="All Weather Portfolio",
+    benchmark_name="Balanced Portfolio",
 )
 print(f"Grade: {result.grade}")       # A+, A, B+, B, C, D, F
 print(f"Sharpe diff: {result.sharpe_diff:+.4f}")

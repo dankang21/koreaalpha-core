@@ -1,6 +1,6 @@
 """koreaalpha-core: Korean stock market portfolio analysis engine."""
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 from .portfolio.metrics import (
     TRADING_DAYS, TRADING_DAYS_KR, TRADING_DAYS_US,
@@ -56,7 +56,8 @@ from .portfolio.frontier import (
     FrontierResult,
 )
 from .portfolio.score import calculate_portfolio_score
-from .stock.fundamental import calculate_all_fundamentals, FundamentalMetrics
+from .stock.fundamental import calculate_all_fundamentals, FundamentalMetrics, calculate_growth_trends
+from .technical.indicators import ema, sma, rsi, macd, bollinger_bands
 from .factor.scoring import (
     calculate_factor_scores,
     calculate_momentum,

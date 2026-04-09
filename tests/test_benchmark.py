@@ -19,8 +19,8 @@ class TestCompareWithBenchmark:
             user.append(user[-1] * (1 + np.random.normal(0.0005, 0.012)))
             bench.append(bench[-1] * (1 + np.random.normal(0.0003, 0.008)))
 
-        result = compare_with_benchmark(user, bench, "All Weather")
-        assert result.benchmark_name == "All Weather"
+        result = compare_with_benchmark(user, bench, "Benchmark A")
+        assert result.benchmark_name == "Benchmark A"
         assert result.grade in ["A+", "A", "B+", "B", "C", "D", "F"]
         assert isinstance(result.volatility_ratio, float)
 
@@ -48,10 +48,10 @@ class TestCompareWithMultiple:
             bench1.append(bench1[-1] * (1 + np.random.normal(0.0003, 0.008)))
             bench2.append(bench2[-1] * (1 + np.random.normal(0.0001, 0.015)))
 
-        results = compare_with_multiple(user, {"All Weather": bench1, "60/40": bench2})
+        results = compare_with_multiple(user, {"Benchmark A": bench1, "Benchmark B": bench2})
         assert len(results) == 2
-        assert results[0].benchmark_name == "All Weather"
-        assert results[1].benchmark_name == "60/40"
+        assert results[0].benchmark_name == "Benchmark A"
+        assert results[1].benchmark_name == "Benchmark B"
 
 
 class TestGradePortfolio:
