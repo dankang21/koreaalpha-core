@@ -4,16 +4,20 @@
 
 A portfolio analysis engine specialized for the Korean stock market. A pure math/statistics calculation library.
 
+[![PyPI](https://img.shields.io/pypi/v/koreaalpha-core)](https://pypi.org/project/koreaalpha-core/)
 [![Python](https://img.shields.io/pypi/pyversions/koreaalpha-core)](https://pypi.org/project/koreaalpha-core/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-83%20passed-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-108%20passed-brightgreen)]()
 
 ## Features
 
 - **Portfolio Metrics (28)** — CAGR, Sharpe, Sortino, MDD, Calmar, Beta, VaR, CVaR, Alpha, Omega, Skewness, Kurtosis, etc.
+- **Efficient Frontier** — Monte Carlo simulation, min-variance / max-Sharpe portfolio optimization
+- **Portfolio Scoring** — Rule-based scoring (0-100) and grading (A+ to F), deterministic and AI-independent
+- **Factor Analysis** — Momentum, value, quality, growth factor scoring engine
 - **Rolling Indicators** — Rolling Sharpe, Volatility, Beta (for chart visualization)
 - **Backtesting** — Rebalancing, transaction costs, slippage, Korean trading day-based, dividend reinvestment
-- **Benchmark Comparison** — Pure comparison logic + grade calculation (A+ to F) (benchmark data defined at service level)
+- **Benchmark Comparison** — Pure comparison logic + grade calculation (A+ to F)
 - **Fundamental** — PER, PBR, ROE, ROA, FCF yield (supports negative PER for loss-making companies)
 - **Korean Market** — Automatic Korean trading day calculation, securities transaction tax, dividend tax, overseas capital gains tax, after-tax returns
 - **Zero pandas dependency** — Uses only numpy, lightweight
@@ -21,7 +25,7 @@ A portfolio analysis engine specialized for the Korean stock market. A pure math
 ## Installation
 
 ```bash
-pip install -e .  # Local install (private package)
+pip install koreaalpha-core
 ```
 
 ## Quick Start
@@ -40,6 +44,65 @@ metrics.sortino_ratio  # Sortino Ratio
 metrics.mdd            # Maximum Drawdown
 metrics.volatility     # Annualized Volatility
 metrics.calmar_ratio   # CAGR / |MDD|
+```
+
+### Efficient Frontier
+
+```python
+import numpy as np
+from koreaalpha_core import calculate_efficient_frontier
+
+# Daily mean returns and covariance matrix (from your data pipeline)
+mean_returns = np.array([0.0005, 0.0003, 0.0001])
+cov_matrix = np.array([
+    [0.0004, 0.0001, 0.00005],
+    [0.0001, 0.0002, 0.00008],
+    [0.00005, 0.00008, 0.0001],
+])
+current_weights = np.array([0.5, 0.3, 0.2])
+
+result = calculate_efficient_frontier(mean_returns, cov_matrix, current_weights)
+
+print(f"Max Sharpe: {result.max_sharpe.sharpe:.4f}")
+print(f"Min Variance Vol: {result.min_variance.volatility:.4f}")
+print(f"Frontier points: {len(result.frontier_points)}")
+```
+
+### Portfolio Scoring
+
+```python
+from koreaalpha_core import calculate_portfolio_score
+
+metrics = {
+    "sharpe_ratio": 1.2,
+    "mdd": -0.12,
+    "cagr": 0.10,
+    "sortino_ratio": 1.5,
+    "calmar_ratio": 0.8,
+}
+score, grade = calculate_portfolio_score(metrics)
+print(f"Score: {score}/100, Grade: {grade}")  # e.g. Score: 78/100, Grade: B+
+```
+
+### Factor Scoring
+
+```python
+import numpy as np
+from koreaalpha_core import calculate_factor_scores
+
+prices = np.array([...])  # 1 year of daily closing prices
+scores = calculate_factor_scores(
+    prices, per=12.5, pbr=1.2, roe=0.18,
+    revenue_growth=0.15, earnings_growth=0.20,
+)
+print(f"Momentum: {scores.momentum}")
+print(f"Value: {scores.value}")
+print(f"Quality: {scores.quality}")
+print(f"Growth: {scores.growth}")
+print(f"Composite: {scores.composite}")
+
+# Custom factor weights
+weighted = scores.weighted_composite(w_momentum=0.4, w_value=0.3, w_quality=0.2, w_growth=0.1)
 ```
 
 ### Rolling Indicators
@@ -68,11 +131,10 @@ dd = drawdown_series(prices)          # Full drawdown time series
 ```python
 from koreaalpha_core import compare_with_benchmark
 
-# Benchmark name and price data are passed from the service layer
 result = compare_with_benchmark(
     user_prices=[...],
     benchmark_prices=[...],
-    benchmark_name="올웨더 포트폴리오",
+    benchmark_name="All Weather Portfolio",
 )
 print(f"Grade: {result.grade}")       # A+, A, B+, B, C, D, F
 print(f"Sharpe diff: {result.sharpe_diff:+.4f}")
@@ -85,15 +147,15 @@ print(f"CAGR diff: {result.cagr_diff:+.2%}")
 from koreaalpha_core import run_backtest, BacktestConfig
 
 result = run_backtest(
-    asset_prices={"삼성전자": [...], "SK하이닉스": [...]},
-    allocations={"삼성전자": 0.6, "SK하이닉스": 0.4},
+    asset_prices={"AAPL": [...], "MSFT": [...]},
+    allocations={"AAPL": 0.6, "MSFT": 0.4},
     config=BacktestConfig(
         initial_capital=10_000_000,
         rebalance_period="quarterly",      # monthly/quarterly/yearly/none
         transaction_cost_pct=0.0015,
         use_kr_trading_days=True,          # Rebalance based on Korean trading days
-        dividend_reinvest=True,            # Reinvest dividends
-        dividend_yields={"삼성전자": 0.02},
+        dividend_reinvest=True,
+        dividend_yields={"AAPL": 0.005},
     ),
     dates=["20240102", "20240103", ...],
 )
@@ -116,12 +178,10 @@ count_trading_days(date(2026, 1, 1), date(2026, 12, 31))  # ~248 days
 
 # Transaction cost (tax rates can be overridden via parameters)
 cost = calc_transaction_cost(10_000_000, is_sell=True)  # Default 0.18%
-cost = calc_transaction_cost(10_000_000, is_sell=True, securities_tax_rate=0.0015)  # Custom tax rate
 
 # Dividend income tax
 tax = calc_dividend_tax(25_000_000)
 # {"gross": 25000000, "tax": 3850000, "net": 21150000, "is_over_threshold": True}
-tax = calc_dividend_tax(25_000_000, tax_rate=0.14)  # Tax rate override
 
 # After-tax return
 result = calc_after_tax_return(0.10, 100_000_000, dividend_income=5_000_000)
@@ -149,16 +209,19 @@ print(f"Debt ratio: {metrics.debt_ratio:.2%}")  # 100.00%
 
 ```python
 from koreaalpha_core import (
-    calculate_alpha,           # Jensen's Alpha
+    calculate_alpha,              # Jensen's Alpha
     calculate_information_ratio,  # Information Ratio
-    calculate_omega_ratio,     # Omega Ratio
-    calculate_tail_ratio,      # Tail Ratio
-    monthly_returns,           # Monthly return matrix
-    annual_returns,            # Annual returns
-    longest_streak,            # Longest win/loss streak
-    correlation_matrix,        # N×N correlation matrix
-    grade_portfolio,           # Grade vs benchmark (A+ to F)
-    compare_with_multiple,     # Compare against multiple benchmarks
+    calculate_omega_ratio,        # Omega Ratio
+    calculate_tail_ratio,         # Tail Ratio
+    monthly_returns,              # Monthly return matrix
+    annual_returns,               # Annual returns
+    longest_streak,               # Longest win/loss streak
+    correlation_matrix,           # N x N correlation matrix
+    grade_portfolio,              # Grade vs benchmark (A+ to F)
+    compare_with_multiple,        # Compare against multiple benchmarks
+    portfolio_stats,              # Single portfolio return/vol/Sharpe
+    FrontierResult,               # Efficient frontier result dataclass
+    FactorScores,                 # Factor scoring result dataclass
 )
 ```
 
@@ -167,24 +230,28 @@ from koreaalpha_core import (
 ```
 korean-holidays (PyPI, MIT)
   └── Lunar calendar conversion + automatic substitute holiday calculation
-       ↑
-koreaalpha-core (private, Proprietary)
-  ├── portfolio/metrics.py   — 28 analysis functions
-  ├── portfolio/backtest.py  — Backtesting engine
-  ├── portfolio/benchmark.py — Pure comparison logic (no data)
-  ├── stock/fundamental.py   — Fundamental indicators
-  ├── kr_market.py           — Transaction costs / taxes (parameterized)
-  ├── utils/                 — Formatting / validation
-  └── 83 tests
+       |
+koreaalpha-core (PyPI, MIT)
+  ├── portfolio/metrics.py    — 28 portfolio analysis functions
+  ├── portfolio/backtest.py   — Backtesting engine with KR trading days
+  ├── portfolio/benchmark.py  — Pure comparison logic (no data)
+  ├── portfolio/frontier.py   — Efficient frontier (Monte Carlo)
+  ├── portfolio/score.py      — Rule-based scoring (0-100, A+ to F)
+  ├── factor/scoring.py       — Momentum, value, quality, growth factors
+  ├── stock/fundamental.py    — Fundamental indicators
+  ├── kr_market.py            — Transaction costs / taxes (parameterized)
+  ├── utils/                  — Formatting / validation
+  └── 108 tests
 ```
 
 ## Design Principles
 
 - **Pure calculation library** — No API calls, no DB access, no authentication
-- **Data-logic separation** — Benchmark definitions, holidays, and colors are managed at the service level
+- **Data-logic separation** — Benchmark definitions, stock lists, and presets are managed at the service level
 - **Tax rates: defaults + override** — Callers can pass parameters when policy changes
 - **No pandas dependency** — Uses only numpy, lightweight
 - **Korean market defaults** — TRADING_DAYS=248, risk-free rate=3.5%
+- **Deterministic scoring** — Same input always produces same output, no AI dependency
 
 ## Comparison with Alternatives
 
@@ -193,12 +260,14 @@ koreaalpha-core (private, Proprietary)
 | Korean trading calendar | O | X | X |
 | Transaction tax (parameterized) | O | X | X |
 | Dividend/CGT tax calculator | O | X | X |
+| Efficient frontier | O | X | X |
+| Portfolio scoring (0-100) | O | X | X |
+| Factor analysis engine | O | X | X |
 | Backtesting with KR holidays | O | X | X |
 | VaR/CVaR/Skewness/Kurtosis | O | O | O |
 | Rolling indicators | O | O | X |
 | Fundamental analysis | O | X | X |
 | pandas-free | O | X | X |
-| Data-logic separation | O | X | X |
 
 ## Disclaimer
 
