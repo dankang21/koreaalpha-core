@@ -7,7 +7,7 @@ A portfolio analysis engine specialized for the Korean stock market. A pure math
 [![PyPI](https://img.shields.io/pypi/v/koreaalpha-core)](https://pypi.org/project/koreaalpha-core/)
 [![Python](https://img.shields.io/pypi/pyversions/koreaalpha-core)](https://pypi.org/project/koreaalpha-core/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-108%20passed-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-123%20passed-brightgreen)]()
 
 ## Features
 
@@ -18,7 +18,8 @@ A portfolio analysis engine specialized for the Korean stock market. A pure math
 - **Rolling Indicators** — Rolling Sharpe, Volatility, Beta (for chart visualization)
 - **Backtesting** — Rebalancing, transaction costs, slippage, Korean trading day-based, dividend reinvestment
 - **Benchmark Comparison** — Pure comparison logic + grade calculation (A+ to F)
-- **Fundamental** — PER, PBR, ROE, ROA, FCF yield (supports negative PER for loss-making companies)
+- **Fundamental** — PER, PBR, ROE, ROA, FCF yield (supports negative PER for loss-making companies), multi-year growth trends with revenue CAGR
+- **Technical Indicators** — SMA, EMA, RSI, MACD, Bollinger Bands (plain lists in and out, aligned to the input for charting)
 - **Korean Market** — Automatic Korean trading day calculation, securities transaction tax, dividend tax, overseas capital gains tax, after-tax returns
 - **Zero pandas dependency** — Uses only numpy, lightweight
 
@@ -205,6 +206,39 @@ print(f"ROE: {metrics.roe:.2%}")       # 15.00%
 print(f"Debt ratio: {metrics.debt_ratio:.2%}")  # 100.00%
 ```
 
+Multi-year growth trends (needs at least 2 years; returns `{}` otherwise):
+
+```python
+from koreaalpha_core import calculate_growth_trends
+
+trends = calculate_growth_trends([
+    {"year": 2022, "income_statement": {"revenue": 100e9, "operating_income": 20e9, "net_income": 15e9}, "ratios": {"roe": 0.10}},
+    {"year": 2023, "income_statement": {"revenue": 120e9, "operating_income": 25e9, "net_income": 18e9}, "ratios": {"roe": 0.12}},
+    {"year": 2024, "income_statement": {"revenue": 150e9, "operating_income": 30e9, "net_income": 22e9}, "ratios": {"roe": 0.14}},
+])
+trends["revenue"]       # [{"year": 2022, "value": 100e9}, ...] sorted by year
+                        # same shape: "operating_income", "net_income", "roe"
+trends["revenue_cagr"]  # 0.2247 (None if first or last revenue <= 0)
+```
+
+### Technical Indicators
+
+```python
+from koreaalpha_core import sma, ema, rsi, macd, bollinger_bands
+
+closes = [...]  # daily closing prices
+
+sma_20 = sma(closes, 20)   # same length as closes; None until 20 points exist
+ema_12 = ema(closes, 12)
+rsi_14 = rsi(closes, 14)   # 0-100 (above 70 overbought, below 30 oversold)
+
+m = macd(closes)           # fast=12, slow=26, signal_period=9
+m["macd"], m["signal"], m["histogram"]
+
+bb = bollinger_bands(closes, period=20, std_dev=2.0)
+bb["upper"], bb["middle"], bb["lower"]
+```
+
 ### More
 
 ```python
@@ -238,10 +272,11 @@ koreaalpha-core (PyPI, MIT)
   ├── portfolio/frontier.py   — Efficient frontier (Monte Carlo)
   ├── portfolio/score.py      — Rule-based scoring (0-100, A+ to F)
   ├── factor/scoring.py       — Momentum, value, quality, growth factors
-  ├── stock/fundamental.py    — Fundamental indicators
+  ├── stock/fundamental.py    — Fundamental indicators + multi-year growth trends
+  ├── technical/indicators.py — SMA, EMA, RSI, MACD, Bollinger Bands
   ├── kr_market.py            — Transaction costs / taxes (parameterized)
   ├── utils/                  — Formatting / validation
-  └── 108 tests
+  └── 123 tests
 ```
 
 ## Design Principles
